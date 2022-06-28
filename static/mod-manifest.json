@@ -1,0 +1,21 @@
+{
+    "apiVersion": "1.2",
+    "version": "1.0",
+    "name": "Tags",
+    "id":"sfire-mod-tags",
+    "icon":"icon.svg",
+    "dataViewDefinition": {
+        "axes": [
+            {
+                "name": "Tags",
+                "mode": "categorical",
+                "placement": "none"
+            } 
+        ]
+    },
+    "files": [
+        "index.html",
+        "main.css",
+        "bundle.js"
+    ]
+}
