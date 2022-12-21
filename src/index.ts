@@ -89,12 +89,16 @@ Spotfire.initialize(async (mod) => {
             .attr("class", "tag")
             .text((tag: Tag) => tag.name)
             .classed("markedTag", (tag: Tag) => tag.isMarked)
-            .on("click", (event, tag: Tag) =>
-                tag.rows.forEach((row: DataViewRow) =>
-                    row.mark(event.ctrlKey || event.metaKey ? "ToggleOrAdd" : "Replace")
+            .on("click", (event:MouseEvent, tag: Tag) =>
+                tag.rows.forEach((row: DataViewRow) => {
+                    row.mark(event.ctrlKey || event.metaKey ? "ToggleOrAdd" : "Replace");
+                    event.stopPropagation();
+                }
                 )
             );
 
+        d3.select("body").on("click", (element) => {dataView.clearMarking()});
+        
         context.signalRenderComplete();
     }
 });

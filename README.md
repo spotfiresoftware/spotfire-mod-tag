@@ -58,11 +58,17 @@ Clicking on a tag will mark all rows with the corresponding key value in all oth
 
 Tags are marked when all rows corresponding to that tag is marked.
 
+Clicking outside the tags will unmark all rows. 
+
 ## Version History
 
 ### 1.0
 
 -   First version
+
+### 1.1
+
+- Clicking outside the tags will unmark all rows
 
 ## Developing the Tag Visualization
 
