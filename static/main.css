@@ -1,0 +1,40 @@
+body {
+  margin: 0;
+  overflow: auto;
+}
+
+#mod-container {
+  white-space: pre;
+  display: flex;
+  flex-direction: row;
+  flex-wrap:wrap;
+  align-items: center;
+  justify-content: center ;
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:100%;
+}
+
+.tag:hover {
+  background-color: #dcdfe8;
+}
+
+.tag {
+  background-color: #f2f5fc;
+  color:#313336;
+  font-weight:bold;
+  padding: 2px 16px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  margin: 4px 2px;
+  cursor:default;
+  border-radius: 16px;
+}
+
+.markedTag {
+  background-color:#ebefff;
+  color:#3050Ef;
+}
