@@ -1,6 +1,6 @@
 # Tag Mod for TIBCO Spotfire®
 
-<img src="https://community.tibco.com/servlet/rtaImage?eid=ka64z0000008RhP&feoid=00N4z000003259u&refid=0EM4z000003UmPM" alt="Tag Mod for TIBCO Spotfire®" width="520" height="325">
+<img src="https://community.tibco.com/servlet/rtaImage?eid=ka64z0000008RhP&feoid=00N4z000003259u&refid=0EM4z000003UmPM" alt="Tag Mod for TIBCO Spotfire®" width="60%">
 
 Display a set of selectable tags that can be used to query a dataset based on keywords.
 
@@ -8,7 +8,7 @@ Each tag represents a unique comma separated value in a column. Selecting a tag 
 
 ## Installation & Use
 
-The [Wiki](https://github.com/tibco/spotfire-mod-tag/wiki) contains step-by-step instruction on how to install and use this Mod in TIBCO Spotfire®.
+The [Wiki](https://github.com/TIBCOSoftware/spotfire-mod-tag/wiki) contains step-by-step instruction on how to install and use this Mod in TIBCO Spotfire®.
 
 ## Building the Project
 
