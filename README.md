@@ -1,6 +1,6 @@
 # Tag Mod for TIBCO Spotfire®
 
-<img src="https://community.tibco.com/servlet/rtaImage?eid=ka64z0000008RhP&feoid=00N4z000003259u&refid=0EM4z000003UmPM" alt="Tag Mod for TIBCO Spotfire®" width="60%">
+<img src="https://community.tibco.com/servlet/rtaImage?eid=ka64z0000008Rtu&feoid=00N4z000003259u&refid=0EM4z000003UmPM" alt="Tag Mod for TIBCO Spotfire®" width="60%">
 
 Display a set of selectable tags that can be used to query a dataset based on keywords.
 
