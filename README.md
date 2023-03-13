@@ -1,5 +1,7 @@
 # Tag Mod for TIBCO Spotfire®
 
+<img src="assets/tag.png" width="60%"/>
+
 Display a set of selectable tags that can be used to query a dataset based on keywords.
 
 Each tag represents a unique comma separated value in a column. Selecting a tag will mark all rows where the corresponding value occurs. This marking can then be used to limit the data displayed in other visualizations.
