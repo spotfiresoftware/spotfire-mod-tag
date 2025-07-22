@@ -41,12 +41,12 @@ body {
 }
 
 .tag.all-marked {
-  background-color: var(--marking-color, #ebefff);
+  background-color: #ebefff;
   color:#3050Ef;
 }
 
 .tag.some-marked {
-  background-color: var(--marking-color, #ebefff);
+  background-color: #ebefff;
 }
 
 div#mod-container.marked div.tag:not(.marked) {
