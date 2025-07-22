@@ -4,7 +4,7 @@ import * as d3 from "d3";
 interface Tag {
     name: string;
     rows: DataViewRow[];
-    isMarked: boolean;
+    markedCount: number;
 }
 
 const Spotfire = window.Spotfire;
@@ -55,50 +55,72 @@ Spotfire.initialize(async (mod) => {
         let rows = (await dataView.allRows()) || [];
 
         let tags = new Map();
+        let markedCount = 0;
 
         rows.forEach((row: DataViewRow) => {
             let tagValue = row.categorical(tagAxisName).formattedValue();
             let tagNames = tagValue.split(",").map((name) => name.trim());
+
             tagNames.forEach((tagName) => {
-                if (!tags.has(tagName)) {
+                // If tag not found, create it
+                if(!tags.has(tagName)) {
                     let tag: Tag = {
                         name: tagName,
                         rows: [row],
-                        isMarked: row.isMarked()
+                        markedCount: row.isMarked() ? 1 : 0
                     };
                     tags.set(tagName, tag);
-                } else {
+                } 
+                // Otherwise add row to existing tag
+                else {
                     let tag = tags.get(tagName);
                     tag.rows.push(row);
-                    if (!row.isMarked()) {
-                        tag.isMarked = false; // tag should only be marked if all corresponding rows are marked
-                    }
+                    tag.markedCount += row.isMarked() ? 1 : 0;
+                }
+
+                // Increment overall marked count
+                if(row.isMarked()) {
+                    markedCount++;
                 }
             });
         });
 
+        // Sort the tags alphabetically
         let tagArray: Tag[] = Array.from(tags.values()).sort();
 
-        /**
-         * Update the tag display
-         */
-        modContainer
-            .selectAll("div")
-            .data(tagArray)
-            .join("div")
-            .attr("class", "tag")
-            .text((tag: Tag) => tag.name)
-            .classed("markedTag", (tag: Tag) => tag.isMarked)
-            .on("click", (event:MouseEvent, tag: Tag) =>
-                tag.rows.forEach((row: DataViewRow) => {
-                    row.mark(event.ctrlKey || event.metaKey ? "ToggleOrAdd" : "Replace");
-                    event.stopPropagation();
-                }
-                )
-            );
+        // Clear existing tags
+        modContainer.selectAll("*").remove();
 
+        // Set marked class if there are any marked tags
+        modContainer.classed("marked", markedCount > 0);
+
+        // Append tags to the container
+        modContainer
+            .selectAll("tags")
+            .data(tagArray)
+                .enter()
+                    .append("div")
+                        .attr("class", "tag-background")
+                        .style("background-color", context.styling.general.backgroundColor)
+                        .on("click", (event:MouseEvent, tag: Tag) =>
+                            tag.rows.forEach((row: DataViewRow) => {
+                                    row.mark(event.ctrlKey || event.metaKey ? "ToggleOrAdd" : "Replace");
+                                    event.stopPropagation();
+                                }
+                            )
+                        )
+                    .append("div")
+                        .attr("class", "tag")
+                        .classed("marked", (tag: Tag) => tag.markedCount > 0)
+                        .classed("all-marked", (tag: Tag) => tag.markedCount > 0 && tag.rows.length === tag.markedCount)
+                        .classed("some-marked", (tag: Tag) => tag.markedCount > 0 && tag.rows.length > tag.markedCount)
+                        .text((tag: Tag) => tag.name);
+
+        
+        // Clear marking on body click
         d3.select("body").on("click", (element) => {dataView.clearMarking()});
         
+        // Signal render complete
         context.signalRenderComplete();
     }
 });
@@ -158,4 +180,27 @@ export function generalErrorHandler<T extends (dataView: Spotfire.DataView, ...a
             }
         } as T;
     };
+}
+
+export function hexToRgb(hexColorStr: string): { r: number; g: number; b: number; a?: number } {
+    const r = parseInt(hexColorStr.slice(1, 3), 16);
+    const g = parseInt(hexColorStr.slice(3, 5), 16);
+    const b = parseInt(hexColorStr.slice(5, 7), 16);
+    const a = parseInt(hexColorStr.slice(7, 9), 16) / 255;
+
+    const rgba: { r: number; g: number; b: number; a?: number } = { r: r, g: g, b: b };
+    if (!isNaN(a)) {
+        rgba.a = a;
+    }
+    return rgba;
+}
+
+export function hexIsLight(hexColorStr: string): boolean {
+    const rgb = hexToRgb(hexColorStr);
+    return rgbIsLight(rgb.r, rgb.g, rgb.b);
+}
+
+export function rgbIsLight(r: number, g: number, b: number) {
+    let luma = 0.2126 * r + 0.7152 * g + 0.0722 * b; // per ITU-R BT.709
+    return luma > 160;
 }

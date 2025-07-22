@@ -17,24 +17,38 @@ body {
   width:100%;
 }
 
-.tag:hover {
-  background-color: #dcdfe8;
+.tag-background {
+  padding: 2px 2px 2px 2px;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  margin: 4px 2px;
+}
+
+.tag-background:hover {
+  border: 1px solid #9B9FAB;
 }
 
 .tag {
-  background-color: #f2f5fc;
-  color:#313336;
   font-weight:bold;
   padding: 2px 16px;
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  margin: 4px 2px;
   cursor:default;
   border-radius: 16px;
+  background-color: #f2f5fc;
+  color: #61646B;
 }
 
-.markedTag {
-  background-color:#ebefff;
+.tag.all-marked {
+  background-color: var(--marking-color, #ebefff);
   color:#3050Ef;
+}
+
+.tag.some-marked {
+  background-color: var(--marking-color, #ebefff);
+}
+
+div#mod-container.marked div.tag:not(.marked) {
+  color: #9B9FAB;
 }
