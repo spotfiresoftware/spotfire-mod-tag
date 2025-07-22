@@ -10,7 +10,7 @@ Each tag represents a unique comma separated value in a column. Selecting a tag 
 
 [Download latest version](https://github.com/spotfiresoftware/spotfire-mod-tag/releases)
 
-The [User Guide](https://github.com/spotfiresoftware/spotfire-mod-tag/doc/user_guide.md) contains step-by-step instruction on how to install and use this Mod in Spotfire®.
+The [User Guide](./doc/user_guide.md) contains step-by-step instruction on how to install and use this Mod in Spotfire®.
 
 ## Building the project
 
