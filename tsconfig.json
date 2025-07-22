@@ -6,7 +6,6 @@
         "allowUnreachableCode": false,
         "noImplicitAny": true,
         "strict": true,
-        "charset": "utf8",
         "sourceMap": true,
         "inlineSources": true,
         "module": "es2015",
@@ -15,7 +14,7 @@
         "baseUrl": ".",
         "moduleResolution": "node",
         "paths": {
-            "spotfire-api": ["./spotfire/spotfire-api-1-2"],
+            "spotfire-api": ["./spotfire/spotfire-api-1-3"],
         },
         "typeRoots": ["./spotfire", "./node_modules/@types"]
     },
