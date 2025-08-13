@@ -36,19 +36,4 @@ body {
   display: inline-block;
   cursor:default;
   border-radius: 16px;
-  background-color: #f2f5fc;
-  color: #61646B;
-}
-
-.tag.all-marked {
-  background-color: #ebefff;
-  color:#3050Ef;
-}
-
-.tag.some-marked {
-  background-color: #ebefff;
-}
-
-div#mod-container.marked div.tag:not(.marked) {
-  color: #9B9FAB;
 }

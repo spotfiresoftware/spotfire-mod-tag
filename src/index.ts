@@ -3,8 +3,16 @@ import * as d3 from "d3";
 
 interface Tag {
     name: string;
+    tagColors: Map<string, TagColor>;
+}
+
+interface TagColor {
+    name: string;
+    colorValue: string;
     rows: DataViewRow[];
     markedCount: number;
+    color?: string;
+    markedColor?: string;
 }
 
 const Spotfire = window.Spotfire;
@@ -12,6 +20,7 @@ const Spotfire = window.Spotfire;
 const DEBUG = false;
 
 const tagAxisName = "Tags";
+const colorAxisName = "Color";
 
 const modContainer = d3.select("#mod-container");
 
@@ -22,17 +31,8 @@ Spotfire.initialize(async (mod) => {
      */
     const context = mod.getRenderContext();
 
-    const reader = mod.createReader(mod.visualization.data(), mod.windowSize());
-
-    reader.subscribe(generalErrorHandler(mod)(onChange), (err) => {
-        mod.controls.errorOverlay.show(err);
-    });
-
-    async function onChange(dataView: DataView, windowSize: Spotfire.Size) {
-        /**
-         * Set font-style from canvas
-         */
-        document.querySelector("#extra_styling")!.innerHTML = `
+    // Set font style from context
+    document.querySelector("#extra_styling")!.innerHTML = `
         .body { 
             font-size: ${context.styling.general.font.fontSize}px; 
             font-weight: ${context.styling.general.font.fontWeight}; 
@@ -40,59 +40,141 @@ Spotfire.initialize(async (mod) => {
         }
         `;
 
-        /**
-         * Validate axis configuration
-         */
+    const reader = mod.createReader(mod.visualization.data(), mod.windowSize());
+
+    reader.subscribe(generalErrorHandler(mod)(onChange), (err) => {
+        mod.controls.errorOverlay.show(err);
+    });
+
+    async function onChange(dataView: DataView, windowSize: Spotfire.Size) {
+        // Clear content
+        modContainer.selectAll("*").remove();
+
+        // Validate the tag axis has been configured
         const hasTags = !!(await dataView.categoricalAxis(tagAxisName));
-        if (!hasTags) {
-            modContainer.selectAll("*").remove();
+        if(hasTags == false) {
+            modContainer.append("div")
+                .attr("class", "no-tags")
+                .text("No available values");
             return;
         }
 
-        /**
-         * Extract tags from comma separated keywords in the selected column
-         */
+        // Get all data rows
         let rows = (await dataView.allRows()) || [];
 
         let tags = new Map();
         let markedCount = 0;
+        let colorContinuousAxis = await dataView.continuousAxis(colorAxisName);
+        let colorCategoricalAxis = await dataView.categoricalAxis(colorAxisName);
 
         rows.forEach((row: DataViewRow) => {
             let tagValue = row.categorical(tagAxisName).formattedValue();
+            
+            let tagColorValue = "default";
+            if(colorContinuousAxis)
+                tagColorValue = row.continuous(colorAxisName).formattedValue();
+            else if(colorCategoricalAxis)
+                tagColorValue = row.categorical(colorAxisName).formattedValue();
+
             let tagNames = tagValue.split(",").map((name) => name.trim());
+            let color = row.color().hexCode;
 
             tagNames.forEach((tagName) => {
                 // If tag not found, create it
-                if(!tags.has(tagName)) {
-                    let tag: Tag = {
+                let tag;
+                if(tags.has(tagName) == false) {
+                    tag = {
                         name: tagName,
-                        rows: [row],
-                        markedCount: row.isMarked() ? 1 : 0
-                    };
+                        tagColors: new Map<string, TagColor>()
+                    } as Tag;
                     tags.set(tagName, tag);
                 } 
-                // Otherwise add row to existing tag
+                // Otherwise retrieve existing tag
                 else {
-                    let tag = tags.get(tagName);
-                    tag.rows.push(row);
-                    tag.markedCount += row.isMarked() ? 1 : 0;
+                    tag = tags.get(tagName);
                 }
 
-                // Increment overall marked count
-                if(row.isMarked()) {
-                    markedCount++;
+                // If tag color not found, create it
+                let tagColor;
+                if(tag.tagColors.has(tagColorValue) == false) {
+                    tagColor = {
+                        name: tagName,
+                        colorValue: tagColorValue,
+                        rows: [],
+                        markedCount: 0
+                    } as TagColor;
+                    tag.tagColors.set(tagColorValue, tagColor);
                 }
+                else {
+                    tagColor = tag.tagColors.get(tagColorValue);
+                }
+
+                tagColor.rows.push(row);
+                tagColor.markedCount += row.isMarked() ? 1 : 0;
+                
+                if(row.isMarked() == false && tagColor.color == null)
+                    tagColor.color = color;
+                if(row.isMarked() && tagColor.markedColor == null)
+                    tagColor.markedColor = color;
+
+                // Increment overall marked count
+                if(row.isMarked())
+                    markedCount++;
             });
         });
 
         // Sort the tags alphabetically
-        let tagArray: Tag[] = Array.from(tags.values()).sort();
-
-        // Clear existing tags
-        modContainer.selectAll("*").remove();
+        let tagArray: TagColor[] = Array.from(tags.values()).reduce((acc: TagColor[], tag: Tag) => acc.concat(Array.from(tag.tagColors.values())), [])
+            .sort((a: TagColor, b: TagColor) => {
+                if(a.name.localeCompare(b.name) == 0)
+                    return a.colorValue.localeCompare(b.colorValue);
+                return a.name.localeCompare(b.name);
+            });
 
         // Set marked class if there are any marked tags
         modContainer.classed("marked", markedCount > 0);
+
+        // Get the tag color from the tag object, falling back to a default color
+        function getTagColor(tag: TagColor): string {
+            return (tag.markedCount > 0 ? tag.markedColor : tag.color) ?? "#f2f5fc";
+        }
+
+        // Get the text color for the tag based on its background color
+        function getTagTextColor(tag: TagColor): string {
+            const tagColor = getTagColor(tag);
+            const colorIsLight = hexIsLight(tagColor);
+            const markedState = tag.markedCount == 0 ? 'none' : tag.markedCount == tag.rows.length ? 'all' : 'some';
+            const baseTextColor = colorIsLight ? "#61646B" : "#FFFFFF";
+            const alpha = colorIsLight ? '66' : '88';
+
+            if(markedCount > 0) {
+                if(markedState == 'all')
+                    return baseTextColor;
+                else if(markedState == 'some')
+                    return baseTextColor + alpha;
+                else if(markedState == 'none')
+                    return baseTextColor + alpha;
+            }
+            return baseTextColor;
+        }
+
+        // Get the tag marked state 
+        function getTagClasses(tag: TagColor): string {
+            if(tag.markedCount == 0)
+                return "tag unmarked";
+
+            if(tag.markedCount == tag.rows.length)
+                return "tag marked all-marked";
+            return "tag marked some-marked";
+        }
+
+        // Click event handler for the tag container
+        function click(event:MouseEvent, tag: TagColor) {
+            tag.rows.forEach((row: DataViewRow) => {
+                row.mark(event.ctrlKey || event.metaKey ? "ToggleOrAdd" : "Replace");
+                event.stopPropagation();
+            });
+        }
 
         // Append tags to the container
         modContainer
@@ -102,19 +184,12 @@ Spotfire.initialize(async (mod) => {
                     .append("div")
                         .attr("class", "tag-background")
                         .style("background-color", context.styling.general.backgroundColor)
-                        .on("click", (event:MouseEvent, tag: Tag) =>
-                            tag.rows.forEach((row: DataViewRow) => {
-                                    row.mark(event.ctrlKey || event.metaKey ? "ToggleOrAdd" : "Replace");
-                                    event.stopPropagation();
-                                }
-                            )
-                        )
+                        .on("click", click)
                     .append("div")
-                        .attr("class", "tag")
-                        .classed("marked", (tag: Tag) => tag.markedCount > 0)
-                        .classed("all-marked", (tag: Tag) => tag.markedCount > 0 && tag.rows.length === tag.markedCount)
-                        .classed("some-marked", (tag: Tag) => tag.markedCount > 0 && tag.rows.length > tag.markedCount)
-                        .text((tag: Tag) => tag.name);
+                        .attr("class", (tag: TagColor) => getTagClasses(tag))
+                        .style("background-color", (tag: TagColor) => getTagColor(tag))
+                        .style("color", (tag: TagColor) => getTagTextColor(tag))
+                        .text((tag: TagColor) => tag.name);
 
         
         // Clear marking on body click
@@ -182,6 +257,7 @@ export function generalErrorHandler<T extends (dataView: Spotfire.DataView, ...a
     };
 }
 
+// Color functions
 export function hexToRgb(hexColorStr: string): { r: number; g: number; b: number; a?: number } {
     const r = parseInt(hexColorStr.slice(1, 3), 16);
     const g = parseInt(hexColorStr.slice(3, 5), 16);

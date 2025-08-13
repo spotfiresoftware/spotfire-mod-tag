@@ -25,17 +25,17 @@ This visualization can be used to display tags in any data set with at least one
 
 Let's say we have data about the people and their pets:
 
-| Name   | Pet             |
-| ------ | --------------- |
-| Frank  | Dog             |
-| Joe    | Dog, Cat        |
-| Oliver | Cat,Dog         |
-| Anna   | Dog, Cat        |
-| Brie   | Dog, Cat, Mouse |
-| Paula  | Cat, Mouse      |
-| Eric   | Cat             |
-| Jean   | Cat             |
-| Bob    | Iguana          |
+| Name   | Pet             | Area  |
+| ------ | --------------- | ----- |
+| Franck | Dog             | South |
+| Joe    | Dog, Cat        | East  |
+| Oliver | Cat,Dog         | East  |
+| Anna   | Dog, Cat        | North |
+| Brie   | Dog, Cat, Mouse | North |
+| Paula  | Cat, Mouse      | East  |
+| Eric   | Cat             | South |
+| Jean   | Cat, Budgie     | South |
+| Bob    | Iguana          | North |
 
 A basic tag visualization can be configured to show one tag per Pet with the following settings:
 * Tags = Pet
@@ -50,12 +50,29 @@ The visualization can be configured by setting the tag axis.
 
 # Usage
 
+## Color
+
+The mod supports coloring tags. If the Color by axis is not specified a default color will be applied. This can be customized in the Colors configuration.
+
+The Color by axis expression may be either continuous or categorical. If specified, then a tag for each tag value-color combination will be created. For example, if Color by is set to Area from the dataset above, and there are "Cat" rows in 3 areas, then 3 "Cat" tags will be displayed, one of each color. Only 1 "Iguana" tag is created, because it exists only in one area.
+
+![Coloring](../assets/color-by.png)
+
+Because the Tags axis supports comma-separated values, it is not possible to color by individual tag values or categories when there are multiple tags per row. Instead, each tag should be separated into a single row per tag, which would then permit coloring by tag value or category. 
+
+Continuous Color by expressions may also not work as expected with comma-separated tag values.
+
 ## Marking
+
 Clicking on a tag will mark all rows with that tag in all other visualizations that uses the same marking. You can mark several tags by Ctrl-clicking on them. Clicking outside the tags will unmark all rows.
 
 Because each row can have multiple tags, the marking display will vary depending if all corresponding rows are marked, or only some of them.
 
 ![Marking](../assets/marking.png)
+
+* Tags with any marked rows will have a darker background color than tags with no marked rows.
+* Tags with no marked rows or some marked rows will have a text color partially blended into the background color
+* Tags with all marked rows will have a full text color contrasting with the background color
 
 Clicking a specific tag may result in other tags displaying as fully or partially marked depending on the underlying data. 
 
@@ -64,6 +81,7 @@ For example, starting with no marking, and the user clicks the "Cat" tag:
 ![Marking](../assets/marking-cat.png)
 
 * All rows of "Cat" are marked
+* All rows of "Budgie" are marked because all "Budgie" rows are also "Cat" rows
 * All rows of "Mouse" are marked because all "Mouse" rows are also "Cat" rows
 * Some rows of "Dog" are marked that are also "Cat" rows, but not the remaining "Dog" rows
 * No rows of "Iguana" are marked because no rows are also "Cat"
